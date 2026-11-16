@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Web.Script.Serialization;
+using System.Text;
 using Microsoft.Win32;
 
 internal static class Setup {
@@ -26,12 +27,25 @@ internal static class Setup {
         return true;
     }
     internal static void Launch(bool background=false){Process.Start(new ProcessStartInfo(Path.Combine(Target,"Minova.Cloud.exe"),background?"--background":""){UseShellExecute=true});}
+    [DllImport("kernel32.dll",SetLastError=true)] static extern IntPtr OpenProcess(uint access,bool inherit,int id);
+    [DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)] static extern bool QueryFullProcessImageName(IntPtr process,uint flags,StringBuilder path,ref int size);
+    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+    static string ExecutablePath(Process process) {
+        IntPtr handle=OpenProcess(0x1000,false,process.Id);if(handle==IntPtr.Zero)return null;
+        try{int size=32768;var path=new StringBuilder(size);return QueryFullProcessImageName(handle,0,path,ref size)?path.ToString():null;}
+        finally{CloseHandle(handle);}
+    }
     internal static void Install(bool startup) {
         if(IntPtr.Size!=8 || Environment.OSVersion.Version.Major<10)throw new Exception("Minova Cloud requires 64-bit Windows 10 or Windows 11.");
         string executable=Path.Combine(Target,"Minova.Cloud.exe");
         if(File.Exists(executable)) {
             using(var exit=Process.Start(new ProcessStartInfo(executable,"--exit"){UseShellExecute=false,CreateNoWindow=true})){exit.WaitForExit(15000);}
-            foreach(var running in Process.GetProcessesByName("Minova.Cloud"))try{if(string.Equals(running.MainModule.FileName,executable,StringComparison.OrdinalIgnoreCase)&&!running.WaitForExit(15000))throw new Exception("Close Minova Cloud before installing this update.");}finally{running.Dispose();}
+            foreach(var running in Process.GetProcessesByName("Minova.Cloud"))try{
+                if(running.HasExited)continue;
+                string path=ExecutablePath(running);
+                if(path==null){if(running.WaitForExit(15000))continue;throw new Exception("Minova Cloud is still closing. Retry the update in a moment.");}
+                if(string.Equals(path,executable,StringComparison.OrdinalIgnoreCase)&&!running.WaitForExit(15000))throw new Exception("Close Minova Cloud before installing this update.");
+            }finally{running.Dispose();}
         }
         Directory.CreateDirectory(Target);
         if((File.GetAttributes(Target)&FileAttributes.ReparsePoint)!=0)throw new IOException("The Minova installation folder cannot be a link.");
