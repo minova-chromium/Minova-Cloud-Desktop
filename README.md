@@ -2,7 +2,11 @@
 
 A native Windows client for [Minova Cloud](https://cloud.project-minova.com). Sign in with your existing Minova account to see **Minova Cloud** in File Explorer's navigation pane.
 
-## Desktop release - 0.2.0
+## Desktop release - 0.3.0
+
+- Approved Minova Cloud branding, retaining the original Minova M inside a dark cloud.
+- Built-in updates: checks the latest published desktop release at startup and every six hours, downloads on unmetered connections, and installs when synchronization and the main window are idle. Open **Updates** in the app or tray to check, install, or disable automatic installation. Files and sign-in are retained.
+- Every update requires a Minova RSA-signed release manifest and matching installer SHA-256. The embedded public key verifies updates independently of the download service.
 
 - Default **Files**, **Music**, **Videos**, and **Pictures** folders, synced to the website and Android. Existing folders are reused; deleting or renaming them is respected.
 - Native Windows Cloud Files API registration and online-only placeholders.
@@ -32,6 +36,10 @@ Install the .NET SDK version in `global.json`, then run:
 ```
 
 The script produces a self-contained x64 application and a checksum-verified installer using the Windows .NET Framework compiler. No administrator access or extra installer compiler is needed. Output goes to ignored `releases/`; build intermediates go to ignored `.work/`.
+
+Release packaging also signs the exact `release.json` bytes as `release.json.sig`. GitHub Actions uses `MINOVA_UPDATE_SIGNING_KEY`; local packaging uses the DPAPI-protected key under `%LOCALAPPDATA%\Minova Cloud\Update Signing`. Back up the private signing identity securely; never commit it. `update-public.pem` is public and embedded in the app. Pull requests use `-UnsignedPreview` and receive no private key. Manifest signing is separate from Windows Authenticode; the installer does not yet have an Authenticode certificate.
+
+Install 0.3.0 once over the previous desktop release to enable the updater. Only published stable GitHub releases are offered; drafts are never installed. Automatic installation relaunches the client in the background. The updater pauses on download, trust or integrity errors and keeps the current installation.
 
 Changes pushed to `main` compile automatically on GitHub Actions and prepare a **draft** release. Publishing a draft makes it the latest stable desktop build. Download the latest published installer at https://github.com/minova-chromium/Minova-Cloud-Desktop/releases/latest/download/Minova-Cloud-Setup.exe. Windows releases are separate from Android so neither platform's latest download hides the other platform's assets. Increase the project version before publishing another version; published releases are never overwritten.
 

@@ -11,6 +11,7 @@ public sealed class SyncEngine : IDisposable {
     public event Action<SyncStatus>? Status;
     public event Action<string>? Activity;
     public bool Paused=>paused;
+    public bool IsBusy=>gate.CurrentCount==0||wake.CurrentCount>0||provider.IsTransferring;
     public SyncEngine(string root,CloudApi api,LocalStore store,bool test=false) {
         this.root=Path.GetFullPath(root);this.api=api;this.store=store;
         account=store.AccountPath(api.Session!.User.Id);ledgerFile=Path.Combine(account,"sync.json");

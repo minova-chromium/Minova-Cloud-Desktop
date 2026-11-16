@@ -13,6 +13,7 @@ public sealed class CloudFilesProvider : IDisposable {
     long connection;bool disposed;
     public string RegistrationId {get;}
     public event Action<string>? Activity;
+    public bool IsTransferring=>!transfers.IsEmpty;
     public CloudFilesProvider(string root,CloudApi api,string userId,bool test=false) {
         this.root=Path.GetFullPath(root);this.api=api;fetch=OnFetch;cancel=OnCancel;
         RegistrationId=$"MinovaCloud{(test?"Test":"") }!{WindowsIdentity.GetCurrent().User!.Value}!{userId}";

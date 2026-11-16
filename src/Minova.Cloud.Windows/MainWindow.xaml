@@ -2,6 +2,7 @@
  <Grid Margin="32">
   <Grid.RowDefinitions><RowDefinition Height="60"/><RowDefinition Height="*"/><RowDefinition Height="32"/></Grid.RowDefinitions>
   <StackPanel Orientation="Horizontal" VerticalAlignment="Top"><Image Source="Assets/lockup.png" Width="160" Height="38" Stretch="Uniform"/><Border Width="1" Height="22" Background="#36424C" Margin="22,0"/><TextBlock Text="Cloud for Windows" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" FontSize="15"/></StackPanel>
+  <Button Grid.Row="0" Content="Updates" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="14,8" Click="OpenUpdates"/>
   <Grid x:Name="LoginPanel" Grid.Row="1">
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="32"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
    <StackPanel VerticalAlignment="Center" Margin="0,0,20,0"><TextBlock Text="YOUR PRIVATE CLOUD" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="SemiBold"/><TextBlock Text="A place for&#10;everything.&#10;Right here." FontSize="46" FontWeight="SemiBold" LineHeight="51" Margin="0,18,0,20"/><TextBlock Text="Your Minova files, inside File Explorer. Open, save, and move them just like any other folder." FontSize="16" Foreground="{StaticResource MutedBrush}" LineHeight="25"/><TextBlock Text="Online-only until you need them.&#10;Available offline when you choose." Margin="0,25,0,0" FontSize="13" Foreground="{StaticResource MutedBrush}" LineHeight="22"/></StackPanel>

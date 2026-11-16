@@ -31,3 +31,9 @@ The Release build completed without compiler warnings. The self-contained instal
 
 GitHub Actions builds the Windows application and installer, verifies release metadata, retains artifacts, and prepares a draft. This is an unsigned preview; Windows compatibility beyond this PC is not yet independently verified. Remote server availability, open-file locks, and Windows hydration behavior can affect timing. Some rename operations may cache contents before sync completes. Shared-with-me items are accessed through the website in this preview.
 
+
+## Updater validation
+
+All twenty native sync checks passed again for 0.3.0. Ten additional headless updater checks passed: signed metadata, modified metadata and foreign keys, incompatible platforms, URL restrictions, idle gating and retained profile data, cached-installer tampering, corrupt download cleanup, actual foreign HTTP redirects, downgrade prevention, and the embedded production trust key. Tests generate a temporary signing key and use a mock transport with a nonexecutable fixture; no real installer or production profile is used. GitHub Actions repeats these updater checks. The release installer and signed manifest compile successfully.
+
+The approved SVG cloud logo retains all original Minova M paths and gradients, with the M scaled to 0.78. Raster assets are rendered from the tracked vector source.

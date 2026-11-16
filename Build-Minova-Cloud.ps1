@@ -1,4 +1,4 @@
-param([string]$DotNet)
+param([string]$DotNet,[switch]$UnsignedPreview)
 $ErrorActionPreference='Stop'
 Set-Location $PSScriptRoot
 if(-not $DotNet){$localSdk=Join-Path $env:LOCALAPPDATA 'Minova Cloud\BuildTools\dotnet\dotnet.exe';if(Test-Path -LiteralPath $localSdk){$DotNet=$localSdk}else{$DotNet=(Get-Command dotnet).Source}}
@@ -16,11 +16,15 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 (Get-FileHash -LiteralPath $payload -Algorithm SHA256).Hash.ToLowerInvariant() | Set-Content -LiteralPath (Join-Path $work 'Payload.sha256') -Encoding ASCII
 $compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 $setup=Join-Path $release 'Minova-Cloud-Setup.exe'
-& $compiler /nologo /target:winexe /platform:x64 /optimize+ /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll /reference:System.Web.Extensions.dll /reference:Microsoft.CSharp.dll "/win32icon:$PSScriptRoot\src\Minova.Cloud.Windows\Assets\minova.ico" "/win32manifest:$PSScriptRoot\src\Minova.Cloud.Windows\app.manifest" "/resource:$payload,Payload.zip" "/resource:$work\Payload.sha256,Payload.sha256" "/out:$setup" (Join-Path $PSScriptRoot 'installer\Setup.cs')
+$assemblyInfo=Join-Path $work 'SetupVersion.cs'
+('[assembly:System.Reflection.AssemblyVersion("'+$version+'.0")][assembly:System.Reflection.AssemblyFileVersion("'+$version+'.0")][assembly:System.Reflection.AssemblyProduct("Minova Cloud Desktop")][assembly:System.Reflection.AssemblyCompany("Minova")]') | Set-Content -LiteralPath $assemblyInfo -Encoding ASCII
+& $compiler /nologo /target:winexe /platform:x64 /optimize+ /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll /reference:System.Web.Extensions.dll /reference:Microsoft.CSharp.dll "/win32icon:$PSScriptRoot\src\Minova.Cloud.Windows\Assets\minova.ico" "/win32manifest:$PSScriptRoot\src\Minova.Cloud.Windows\app.manifest" "/resource:$payload,Payload.zip" "/resource:$work\Payload.sha256,Payload.sha256" "/out:$setup" (Join-Path $PSScriptRoot 'installer\Setup.cs') $assemblyInfo
 if($LASTEXITCODE -ne 0){throw 'Windows installer compilation failed.'}
 Copy-Item -LiteralPath $setup -Destination (Join-Path $release "Minova-Cloud-Desktop-$version.exe") -Force
 $checksum=(Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash.ToLowerInvariant()
 @{version=$version;platform='windows-x64';file='Minova-Cloud-Setup.exe';sha256=$checksum;sourceCommit=(& git rev-parse HEAD 2>$null)} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $release 'release.json') -Encoding utf8
+if(-not $UnsignedPreview){& (Join-Path $PSScriptRoot 'scripts\Sign-UpdateManifest.ps1') -Manifest (Join-Path $release 'release.json') -PublicKey (Join-Path $PSScriptRoot 'update-public.pem') -Signature (Join-Path $release 'release.json.sig')}
+if($UnsignedPreview -and (Test-Path -LiteralPath (Join-Path $release 'release.json.sig'))){Remove-Item -LiteralPath (Join-Path $release 'release.json.sig')}
 "$checksum  Minova-Cloud-Setup.exe`n$checksum  Minova-Cloud-Desktop-$version.exe" | Set-Content -LiteralPath (Join-Path $release 'SHA256SUMS.txt') -Encoding ASCII
 Write-Output "Installer ready: $setup"
 exit 0

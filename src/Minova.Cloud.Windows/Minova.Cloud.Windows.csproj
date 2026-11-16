@@ -6,10 +6,11 @@
     <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable><ImplicitUsings>disable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.2.0</Version><AssemblyName>Minova.Cloud</AssemblyName>
+    <Version>0.3.0</Version><AssemblyName>Minova.Cloud</AssemblyName>
     <ApplicationIcon>Assets\minova.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   <ItemGroup><Resource Include="Assets\*.png" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="..\..\update-public.pem" LogicalName="Minova.Cloud.update-public.pem" /></ItemGroup>
 </Project>

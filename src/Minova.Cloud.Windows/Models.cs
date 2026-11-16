@@ -20,6 +20,7 @@ public sealed class Preferences {
     public string? Root {get;set;}
     public string? UserId {get;set;}
     public bool Startup {get;set;} = true;
+    public bool AutoUpdates {get;set;} = true;
 }
 public sealed record SyncStatus(string Title, string Detail, int Files = 0, DateTimeOffset? LastSync = null, bool Error = false);
 public sealed class ApiException(int status, string message) : IOException(message) { public int Status {get;} = status; }

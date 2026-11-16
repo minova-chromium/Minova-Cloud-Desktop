@@ -14,7 +14,7 @@ public partial class MainWindow : Window {
         if(working)return;working=true;SignInButton.IsEnabled=false;LoginError.Text="Connecting…";
         try {
             engine?.Dispose();engine=null;api?.Dispose();api=new();var session=await api.Login(Username.Text.Trim(),Password.Password);Password.Clear();
-            if(preferences.UserId!=session.User.Id){preferences.UserId=session.User.Id;preferences.Root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Minova Cloud - "+session.User.Username);}
+            preferences=store.LoadPreferences();if(preferences.UserId!=session.User.Id){preferences.UserId=session.User.Id;preferences.Root=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Minova Cloud - "+session.User.Username);}
             store.SaveSession(session);store.SavePreferences(preferences);await Connect(true);
         }catch(Exception error){ShowError(error is HttpRequestException?"Could not reach Minova Cloud. Check your internet connection.":error.Message);}
         finally{working=false;SignInButton.IsEnabled=true;}
@@ -34,12 +34,14 @@ public partial class MainWindow : Window {
     void OpenFolder(object sender,RoutedEventArgs e){if(engine!=null)ShellIntegration.OpenFolder(engine.Root);}
     async void SyncNow(object sender,RoutedEventArgs e){if(engine==null)return;SyncButton.IsEnabled=false;try{await Task.Run(()=>engine.SyncOnce());}catch(Exception error){Display(new("Sync paused",error.Message,Error:true));}finally{SyncButton.IsEnabled=true;}}
     void PauseSync(object sender,RoutedEventArgs e){engine?.TogglePause();PauseButton.Content=engine?.Paused==true?"Resume sync":"Pause sync";}
-    void StartupChanged(object sender,RoutedEventArgs e){preferences.Startup=StartupBox.IsChecked==true;store.SavePreferences(preferences);ShellIntegration.Startup(preferences.Startup);}
+    void StartupChanged(object sender,RoutedEventArgs e){preferences=store.LoadPreferences();preferences.Startup=StartupBox.IsChecked==true;store.SavePreferences(preferences);ShellIntegration.Startup(preferences.Startup);}
     async void Disconnect(object sender,RoutedEventArgs e) {
         var result=System.Windows.MessageBox.Show(this,"Disconnect this PC from Minova Cloud? Downloaded files stay on this PC. Online-only files need Minova Cloud to be connected.","Disconnect Minova Cloud",MessageBoxButton.YesNo,MessageBoxImage.Question);
         if(result!=MessageBoxResult.Yes)return;
         try{if(api!=null)await api.Request<JsonElement>("/api/logout",HttpMethod.Post,new {});}catch(ApiException error) when(error.Status==401){}catch(Exception error){ShowError("Could not disconnect: "+error.Message);return;}
         engine?.Dispose();engine=null;api?.Dispose();api=null;store.ForgetSession();ConnectedPanel.Visibility=Visibility.Collapsed;LoginPanel.Visibility=Visibility.Visible;LoginError.Text="This PC is disconnected.";
     }
+    public bool BusyForUpdate=>working||(engine?.IsBusy??false)||IsActive;
+    void OpenUpdates(object sender,RoutedEventArgs e)=>((App)System.Windows.Application.Current).ShowUpdates();
     public void Quit(){quitting=true;engine?.Dispose();api?.Dispose();Close();}
 }

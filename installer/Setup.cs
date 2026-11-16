@@ -16,7 +16,7 @@ internal static class Setup {
     internal static readonly string Target=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","Minova Cloud");
     [STAThread] static int Main(string[] args) {
         try {
-            if(args.Contains("--silent")){Install(DefaultStartup());if(!args.Contains("--no-launch"))Launch();return 0;}
+            if(args.Contains("--silent")){Install(DefaultStartup());if(!args.Contains("--no-launch"))Launch(args.Contains("--background"));return 0;}
             Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);Application.Run(new SetupWindow());return 0;
         }catch(Exception error){if(!args.Contains("--silent"))MessageBox.Show(error.Message,"Minova Cloud Setup",MessageBoxButtons.OK,MessageBoxIcon.Error);else Console.Error.WriteLine(error);return 1;}
     }
@@ -25,7 +25,7 @@ internal static class Setup {
         if(File.Exists(file)){var values=new JavaScriptSerializer().Deserialize<System.Collections.Generic.Dictionary<string,object>>(File.ReadAllText(file));object enabled;if(values.TryGetValue("startup",out enabled))return Convert.ToBoolean(enabled);}
         return true;
     }
-    internal static void Launch(){Process.Start(new ProcessStartInfo(Path.Combine(Target,"Minova.Cloud.exe")){UseShellExecute=true});}
+    internal static void Launch(bool background=false){Process.Start(new ProcessStartInfo(Path.Combine(Target,"Minova.Cloud.exe"),background?"--background":""){UseShellExecute=true});}
     internal static void Install(bool startup) {
         if(IntPtr.Size!=8 || Environment.OSVersion.Version.Major<10)throw new Exception("Minova Cloud requires 64-bit Windows 10 or Windows 11.");
         string executable=Path.Combine(Target,"Minova.Cloud.exe");
