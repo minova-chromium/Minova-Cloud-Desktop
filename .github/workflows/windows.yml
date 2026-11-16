@@ -1,0 +1,43 @@
+name: Build Minova Cloud for Windows
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: minova-windows-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Build Windows app and installer
+        shell: pwsh
+        run: ./Build-Minova-Cloud.ps1 -DotNet (Get-Command dotnet).Source
+      - name: Verify release metadata
+        shell: pwsh
+        run: |
+          $metadata = Get-Content releases/release.json -Raw | ConvertFrom-Json
+          $actual = (Get-FileHash releases/Minova-Cloud-Setup.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actual -ne $metadata.sha256) { throw 'Installer checksum does not match release metadata.' }
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Minova-Cloud-Windows-${{ github.sha }}
+          path: releases/
+          retention-days: 90
+      - name: Prepare reviewed-release draft
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/publish-release.mjs
+        shell: pwsh
+    permissions:
+      contents: write
