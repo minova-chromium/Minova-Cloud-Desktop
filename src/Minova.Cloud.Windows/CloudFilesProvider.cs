@@ -25,7 +25,7 @@ public sealed class CloudFilesProvider : IDisposable {
             HydrationPolicy=StorageProviderHydrationPolicy.Full,HydrationPolicyModifier=StorageProviderHydrationPolicyModifier.None,
             PopulationPolicy=StorageProviderPopulationPolicy.AlwaysFull,
             InSyncPolicy=StorageProviderInSyncPolicy.FileLastWriteTime,
-            Version="0.1.0",ShowSiblingsAsGroup=false,HardlinkPolicy=StorageProviderHardlinkPolicy.None,
+            Version=Product.Version,ShowSiblingsAsGroup=false,HardlinkPolicy=StorageProviderHardlinkPolicy.None,
             RecycleBinUri=new Uri(CloudApi.Origin+"/#trash")
         };
         StorageProviderSyncRootManager.Register(info);

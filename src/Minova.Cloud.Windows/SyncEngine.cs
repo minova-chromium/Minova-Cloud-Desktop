@@ -14,7 +14,7 @@ public sealed class SyncEngine : IDisposable {
     public SyncEngine(string root,CloudApi api,LocalStore store,bool test=false) {
         this.root=Path.GetFullPath(root);this.api=api;this.store=store;
         account=store.AccountPath(api.Session!.User.Id);ledgerFile=Path.Combine(account,"sync.json");
-        ledger=store.Read<SyncLedger>(ledgerFile)??new();ledger.Items=new(ledger.Items,StringComparer.OrdinalIgnoreCase);ledger.Pins=new(ledger.Pins,StringComparer.OrdinalIgnoreCase);
+        ledger=store.Read<SyncLedger>(ledgerFile)??new();ledger.Items=new(ledger.Items,StringComparer.OrdinalIgnoreCase);ledger.Pins=new(ledger.Pins,StringComparer.OrdinalIgnoreCase);ledger.DefaultFolders=new(ledger.DefaultFolders,StringComparer.OrdinalIgnoreCase);
         provider=new(root,api,api.Session.User.Id,test);provider.Activity+=message=>Activity?.Invoke(message);
     }
     public async Task Connect(bool firstConnection) {
@@ -93,6 +93,23 @@ public sealed class SyncEngine : IDisposable {
         }
         ledger.Move=null;Save();
     }
+    async Task InitializeDefaultFolders(Dictionary<string,CloudItem> remote,Dictionary<string,bool> local,CancellationToken ct) {
+        foreach(var name in new[]{"Files","Music","Videos","Pictures"}) {
+            if(ledger.DefaultFolders.Contains(name))continue;
+            // Respect an existing library and any already-tracked deletions or moves.
+            if(remote.TryGetValue(name,out var existing) || ledger.Items.ContainsKey(name) || (local.TryGetValue(name,out bool directory) && !directory)) {
+                if((existing!=null && !existing.IsDirectory) || (local.TryGetValue(name,out var folder) && !folder))Activity?.Invoke("Default folder skipped · a file already uses the name "+name);
+                ledger.DefaultFolders.Add(name);Save();continue;
+            }
+            try {
+                var response=await api.Folder(name,ct);remote[name]=response.GetProperty("item").Deserialize<CloudItem>(LocalStore.Json)!;
+            }catch(ApiException error) when(error.Status==409) {
+                var item=await api.Item(name,ct);remote[item.Path]=item;
+                if(!item.IsDirectory)Activity?.Invoke("Default folder skipped · a file already uses the name "+name);
+            }
+            ledger.DefaultFolders.Add(name);Save();
+        }
+    }
     public async Task SyncOnce(CancellationToken ct=default) {
         await gate.WaitAsync(ct);
         try {
@@ -100,6 +117,7 @@ public sealed class SyncEngine : IDisposable {
             var snapshot=await api.Snapshot(ct);var remote=snapshot.Items.ToDictionary(x=>x.Path,StringComparer.OrdinalIgnoreCase);
             foreach(var item in remote.Values)_=SafePath(root,item.Path);
             var initialLocal=LocalFiles(); // Complete and validate the local scan before considering any deletions.
+            await InitializeDefaultFolders(remote,initialLocal,ct);
             FinishMove(remote);
             foreach(var pair in initialLocal.OrderBy(x=>x.Key.Count(c=>c=='/')).ToArray()) {
                 if(remote.ContainsKey(pair.Key))continue;var identity=CloudFilesProvider.ReadIdentity(SafePath(root,pair.Key));

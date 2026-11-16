@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable><ImplicitUsings>disable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.1.0</Version><AssemblyName>Minova.Cloud</AssemblyName>
+    <Version>0.2.0</Version><AssemblyName>Minova.Cloud</AssemblyName>
     <ApplicationIcon>Assets\minova.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>

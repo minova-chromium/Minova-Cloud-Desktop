@@ -18,9 +18,9 @@ $compiler=Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 $setup=Join-Path $release 'Minova-Cloud-Setup.exe'
 & $compiler /nologo /target:winexe /platform:x64 /optimize+ /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll /reference:System.IO.Compression.dll /reference:System.IO.Compression.FileSystem.dll /reference:System.Web.Extensions.dll /reference:Microsoft.CSharp.dll "/win32icon:$PSScriptRoot\src\Minova.Cloud.Windows\Assets\minova.ico" "/win32manifest:$PSScriptRoot\src\Minova.Cloud.Windows\app.manifest" "/resource:$payload,Payload.zip" "/resource:$work\Payload.sha256,Payload.sha256" "/out:$setup" (Join-Path $PSScriptRoot 'installer\Setup.cs')
 if($LASTEXITCODE -ne 0){throw 'Windows installer compilation failed.'}
-Copy-Item -LiteralPath $setup -Destination (Join-Path $release "Minova-Cloud-Windows-$version.exe") -Force
+Copy-Item -LiteralPath $setup -Destination (Join-Path $release "Minova-Cloud-Desktop-$version.exe") -Force
 $checksum=(Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash.ToLowerInvariant()
 @{version=$version;platform='windows-x64';file='Minova-Cloud-Setup.exe';sha256=$checksum;sourceCommit=(& git rev-parse HEAD 2>$null)} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $release 'release.json') -Encoding utf8
-"$checksum  Minova-Cloud-Setup.exe`n$checksum  Minova-Cloud-Windows-$version.exe" | Set-Content -LiteralPath (Join-Path $release 'SHA256SUMS.txt') -Encoding ASCII
+"$checksum  Minova-Cloud-Setup.exe`n$checksum  Minova-Cloud-Desktop-$version.exe" | Set-Content -LiteralPath (Join-Path $release 'SHA256SUMS.txt') -Encoding ASCII
 Write-Output "Installer ready: $setup"
 exit 0

@@ -1,8 +1,8 @@
-# Windows preview validation — 0.1.0
+# Desktop release validation — 0.2.0
 
 Validated on this Windows x64 PC with an isolated Minova server and synthetic accounts. No production user credentials were entered or extracted, and integration checks never targeted production storage.
 
-Seventeen checks passed:
+Twenty checks passed:
 
 1. The branded WPF window loads and renders as an offscreen artifact.
 2. Minova sign-in and encrypted Windows DPAPI credentials round-trip.
@@ -22,6 +22,8 @@ Seventeen checks passed:
 16. Missing sync-root identity blocks synchronization and cloud deletions.
 17. Linked folders are rejected before any sync changes or uploads outside the sync root.
 18. Traversal paths cannot escape the sync folder.
+19. Files, Music, Videos and Pictures are created once and existing folders are reused.
+20. Deleting a default folder is respected across subsequent syncs and client restart.
 
 All eight Node server suites passed, including revision race detection, account isolation, conditional moves, stale downloads, safe directory deletion, and previous-version restoration. The Android download/release suite still passes.
 

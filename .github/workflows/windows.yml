@@ -1,4 +1,4 @@
-name: Build Minova Cloud for Windows
+name: Build Minova Cloud Desktop
 on:
   push:
     branches: [main]
@@ -30,7 +30,7 @@ jobs:
           if ($actual -ne $metadata.sha256) { throw 'Installer checksum does not match release metadata.' }
       - uses: actions/upload-artifact@v7
         with:
-          name: Minova-Cloud-Windows-${{ github.sha }}
+          name: Minova-Cloud-Desktop-${{ github.sha }}
           path: releases/
           retention-days: 90
       - name: Prepare reviewed-release draft

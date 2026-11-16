@@ -4,7 +4,7 @@ namespace Minova.Cloud;
 public partial class MainWindow : Window {
     readonly LocalStore store;Preferences preferences;CloudApi? api;SyncEngine? engine;
     bool working,quitting;
-    public MainWindow(LocalStore store) {InitializeComponent();this.store=store;preferences=store.LoadPreferences();Closing+=(_,e)=>{if(!quitting){e.Cancel=true;Hide();}};}
+    public MainWindow(LocalStore store) {InitializeComponent();VersionLabel.Text=Product.Version+" \u00b7 Private by default. Shared by choice.";this.store=store;preferences=store.LoadPreferences();Closing+=(_,e)=>{if(!quitting){e.Cancel=true;Hide();}};}
     public async Task Restore() {
         var session=store.LoadSession();if(session==null)return;
         api=new(session);try{await Connect(false);}catch(Exception error){ShowError(error.Message);}

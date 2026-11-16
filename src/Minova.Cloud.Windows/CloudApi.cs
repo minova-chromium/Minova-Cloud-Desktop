@@ -14,7 +14,7 @@ public sealed class CloudApi : IDisposable {
         if(testOrigin!=null && Uri.TryCreate(testOrigin,UriKind.Absolute,out var uri) && uri.IsLoopback && uri.Scheme=="http")origin=testOrigin;
 #endif
         http=new(new HttpClientHandler {AllowAutoRedirect=false,UseCookies=false}) {BaseAddress=new Uri(origin),Timeout=TimeSpan.FromMinutes(20)};
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("Minova-Cloud-Windows/0.1.0");Session=session;
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("Minova-Cloud-Desktop/"+Product.Version);Session=session;
     }
     public static string Encode(string path)=>Uri.EscapeDataString(path);
     private HttpRequestMessage Message(string route,HttpMethod method, object? body=null, bool auth=true) {

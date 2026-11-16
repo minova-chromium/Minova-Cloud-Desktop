@@ -1,9 +1,10 @@
-# Minova Cloud for Windows
+# Minova Cloud Desktop
 
 A native Windows client for [Minova Cloud](https://cloud.project-minova.com). Sign in with your existing Minova account to see **Minova Cloud** in File Explorer's navigation pane.
 
-## First Windows preview — 0.1.0
+## Desktop release - 0.2.0
 
+- Default **Files**, **Music**, **Videos**, and **Pictures** folders, synced to the website and Android. Existing folders are reused; deleting or renaming them is respected.
 - Native Windows Cloud Files API registration and online-only placeholders.
 - Opening a file downloads its contents. Explorer's **Always keep on this device** and **Free up space** controls are supported.
 - File creation, edits, renames, moves, folders, and deletions sync with the same private library used by Android and the website.
@@ -32,7 +33,7 @@ Install the .NET SDK version in `global.json`, then run:
 
 The script produces a self-contained x64 application and a checksum-verified installer using the Windows .NET Framework compiler. No administrator access or extra installer compiler is needed. Output goes to ignored `releases/`; build intermediates go to ignored `.work/`.
 
-Changes pushed to `main` compile automatically on GitHub Actions and prepare a **draft** release. Publishing a draft makes it the latest stable Windows build. Windows releases are separate from Android so neither platform's latest download hides the other platform's assets. Increase the project version before publishing another version; published releases are never overwritten.
+Changes pushed to `main` compile automatically on GitHub Actions and prepare a **draft** release. Publishing a draft makes it the latest stable desktop build. Download the latest published installer at https://github.com/minova-chromium/Minova-Cloud-Desktop/releases/latest/download/Minova-Cloud-Setup.exe. Windows releases are separate from Android so neither platform's latest download hides the other platform's assets. Increase the project version before publishing another version; published releases are never overwritten.
 
 ## Validation
 
