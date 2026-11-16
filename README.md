@@ -54,3 +54,7 @@ dotnet src/Minova.Cloud.Windows/bin/Debug/net10.0-windows10.0.19041.0/Minova.Clo
 ```
 
 Release builds ignore test origins and exclude the integration harness. They connect only to `https://cloud.project-minova.com` with normal HTTPS validation. User files, device credentials, server configuration, signing secrets, and build artifacts are never committed.
+
+## Cloud wordmark
+
+The two-row white/cyan Minova Cloud wordmark is the supplied artwork, not an AI redraw. `brand/minova-cloud-wordmark-source.png` retains the original PNG byte for byte. `brand/PrepareWordmark.cs` finds its transparent bounds, exports a clipped SVG embedding the unchanged source, and makes a 1024-pixel UI PNG. The approved cloud/M application icon is retained.

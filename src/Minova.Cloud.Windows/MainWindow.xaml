@@ -1,7 +1,7 @@
 <Window x:Class="Minova.Cloud.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Minova Cloud" Width="880" Height="700" MinWidth="720" MinHeight="620" Background="{StaticResource BackgroundBrush}" WindowStartupLocation="CenterScreen" Icon="Assets/icon.png">
  <Grid Margin="32">
   <Grid.RowDefinitions><RowDefinition Height="60"/><RowDefinition Height="*"/><RowDefinition Height="32"/></Grid.RowDefinitions>
-  <StackPanel Orientation="Horizontal" VerticalAlignment="Top"><Image Source="Assets/lockup.png" Width="160" Height="38" Stretch="Uniform"/><Border Width="1" Height="22" Background="#36424C" Margin="22,0"/><TextBlock Text="Cloud for Windows" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" FontSize="15"/></StackPanel>
+  <StackPanel Orientation="Horizontal" VerticalAlignment="Top"><Image Source="Assets/lockup.png" Width="148" Height="56" Stretch="Uniform"/><Border Width="1" Height="22" Background="#36424C" Margin="22,0"/><TextBlock Text="for Windows" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" FontSize="15"/></StackPanel>
   <Button Grid.Row="0" Content="Updates" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="14,8" Click="OpenUpdates"/>
   <Grid x:Name="LoginPanel" Grid.Row="1">
    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="32"/><ColumnDefinition Width="340"/></Grid.ColumnDefinitions>
