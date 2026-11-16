@@ -27,7 +27,7 @@ public partial class MainWindow : Window {
         LoginPanel.Visibility=Visibility.Collapsed;ConnectedPanel.Visibility=Visibility.Visible;Greeting.Text="Your Cloud, "+session.User.Name+".";AccountLabel.Text="@"+session.User.Username+" · This PC";FolderPath.Text=preferences.Root;StartupBox.IsChecked=preferences.Startup;
         AddActivity("Connected · "+preferences.Root);engine.Start();LoginError.Text="";
     }
-    void Display(SyncStatus value) {StatusTitle.Text=value.Title;StatusDetail.Text=value.Detail;FileCount.Text=value.Files+" files"+(value.LastSync==null?"":" · Last checked "+value.LastSync.Value.ToLocalTime().ToString("HH:mm"));((App)System.Windows.Application.Current).SetTrayStatus(value.Title);}
+    void Display(SyncStatus value) {StatusTitle.Text=value.Title;StatusDetail.Text=value.Detail;FileCount.Text=value.Files+" files"+(value.LastSync==null?"":" · Last checked "+value.LastSync.Value.ToLocalTime().ToString("HH:mm"));((App)System.Windows.Application.Current).SetTrayStatus(value.Title);if(value.Title=="Sign in again"){ConnectedPanel.Visibility=Visibility.Collapsed;LoginPanel.Visibility=Visibility.Visible;LoginError.Text="This PC’s connection expired. Sign in again to resume syncing.";}}
     void AddActivity(string value){ActivityList.Items.Insert(0,DateTime.Now.ToString("HH:mm")+"  "+value);while(ActivityList.Items.Count>100)ActivityList.Items.RemoveAt(ActivityList.Items.Count-1);}
     void ShowError(string message){LoginError.Text=message;if(ConnectedPanel.Visibility==Visibility.Visible)Display(new("Needs attention",message,Error:true));}
     void OpenWeb(object sender,RoutedEventArgs e)=>ShellIntegration.Open(CloudApi.Origin);
@@ -38,7 +38,7 @@ public partial class MainWindow : Window {
     async void Disconnect(object sender,RoutedEventArgs e) {
         var result=System.Windows.MessageBox.Show(this,"Disconnect this PC from Minova Cloud? Downloaded files stay on this PC. Online-only files need Minova Cloud to be connected.","Disconnect Minova Cloud",MessageBoxButton.YesNo,MessageBoxImage.Question);
         if(result!=MessageBoxResult.Yes)return;
-        try{if(api!=null)await api.Request<JsonElement>("/api/logout",HttpMethod.Post,new {});}catch(Exception error){ShowError("Could not disconnect: "+error.Message);return;}
+        try{if(api!=null)await api.Request<JsonElement>("/api/logout",HttpMethod.Post,new {});}catch(ApiException error) when(error.Status==401){}catch(Exception error){ShowError("Could not disconnect: "+error.Message);return;}
         engine?.Dispose();engine=null;api?.Dispose();api=null;store.ForgetSession();ConnectedPanel.Visibility=Visibility.Collapsed;LoginPanel.Visibility=Visibility.Visible;LoginError.Text="This PC is disconnected.";
     }
     public void Quit(){quitting=true;engine?.Dispose();api?.Dispose();Close();}

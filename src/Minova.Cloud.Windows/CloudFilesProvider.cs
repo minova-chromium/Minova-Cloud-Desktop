@@ -31,7 +31,7 @@ public sealed class CloudFilesProvider : IDisposable {
         StorageProviderSyncRootManager.Register(info);
         N.Check(N.CfConnectSyncRoot(root,[new(){Type=0,Callback=Marshal.GetFunctionPointerForDelegate(fetch)},new(){Type=2,Callback=Marshal.GetFunctionPointerForDelegate(cancel)},new(){Type=uint.MaxValue}],IntPtr.Zero,4,out connection));
     }
-    static byte[] Identity(CloudItem item)=>JsonSerializer.SerializeToUtf8Bytes(item,LocalStore.Json);
+    static byte[] Identity(CloudItem item){var value=JsonSerializer.SerializeToUtf8Bytes(item,LocalStore.Json);if(value.Length>4096)throw new IOException("Shorten this file or folder path before syncing it to Windows: "+item.Path);return value;}
     static N.Metadata Metadata(CloudItem item)=>new(){Size=item.IsDirectory?0:item.Size,Basic=new(){Creation=item.Modified.UtcDateTime.ToFileTimeUtc(),Write=item.Modified.UtcDateTime.ToFileTimeUtc(),Attributes=item.IsDirectory?0x10u:0x20u}};
     public void Create(CloudItem item) {
         var identity=Identity(item);var pointer=Marshal.AllocHGlobal(identity.Length);

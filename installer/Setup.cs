@@ -16,9 +16,14 @@ internal static class Setup {
     internal static readonly string Target=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Programs","Minova Cloud");
     [STAThread] static int Main(string[] args) {
         try {
-            if(args.Contains("--silent")){Install(true);if(!args.Contains("--no-launch"))Launch();return 0;}
+            if(args.Contains("--silent")){Install(DefaultStartup());if(!args.Contains("--no-launch"))Launch();return 0;}
             Application.EnableVisualStyles();Application.SetCompatibleTextRenderingDefault(false);Application.Run(new SetupWindow());return 0;
         }catch(Exception error){if(!args.Contains("--silent"))MessageBox.Show(error.Message,"Minova Cloud Setup",MessageBoxButtons.OK,MessageBoxIcon.Error);else Console.Error.WriteLine(error);return 1;}
+    }
+    static bool DefaultStartup() {
+        string file=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),@"Minova Cloud\Windows\preferences.json");
+        if(File.Exists(file)){var values=new JavaScriptSerializer().Deserialize<System.Collections.Generic.Dictionary<string,object>>(File.ReadAllText(file));object enabled;if(values.TryGetValue("startup",out enabled))return Convert.ToBoolean(enabled);}
+        return true;
     }
     internal static void Launch(){Process.Start(new ProcessStartInfo(Path.Combine(Target,"Minova.Cloud.exe")){UseShellExecute=true});}
     internal static void Install(bool startup) {
@@ -72,7 +77,7 @@ internal static class Setup {
             Controls.Add(new Label {Text="See your Minova files in File Explorer. Open online-only files, keep them offline, and sync changes across your devices.",Location=new Point(30,128),Size=new Size(492,55)});
             Controls.Add(new Label {Text="Installs for your Windows account:",AutoSize=true,Location=new Point(30,200),ForeColor=Color.FromArgb(170,181,194)});
             Controls.Add(new Label {Text=Target,Location=new Point(30,225),Size=new Size(490,38),ForeColor=Color.FromArgb(170,181,194),Font=new Font("Segoe UI",9)});
-            startup=new CheckBox {Text="Start Minova Cloud when I sign in to Windows",Checked=true,AutoSize=true,Location=new Point(30,274)};Controls.Add(startup);
+            startup=new CheckBox {Text="Start Minova Cloud when I sign in to Windows",Checked=DefaultStartup(),AutoSize=true,Location=new Point(30,274)};Controls.Add(startup);
             status=new Label {Text="Your existing Minova login connects this PC.",Location=new Point(30,325),Size=new Size(310,45),ForeColor=Color.FromArgb(170,181,194),Font=new Font("Segoe UI",9)};Controls.Add(status);
             button=new Button {Text="Install Minova Cloud",Location=new Point(351,325),Size=new Size(180,42),BackColor=Color.FromArgb(18,210,222),ForeColor=Color.FromArgb(6,27,34),FlatStyle=FlatStyle.Flat};Controls.Add(button);button.Click+=InstallClicked;
         }
@@ -83,3 +88,4 @@ internal static class Setup {
         }
     }
 }
+
