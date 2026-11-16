@@ -5,14 +5,14 @@ internal static class IntegrationChecks {
     static void Assert(bool value,string message){if(!value)throw new Exception(message);}
     public static async Task Run(string[] args) {
         var report=args[1];var origin=args[2];var testDirectory=Path.Combine(Path.GetTempPath(),"minova-windows-integration-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(testDirectory);
-        var log=new List<string>();void Pass(string message){log.Add("PASS "+message);File.WriteAllLines(report,log);}
+        var log=new List<string>();void Note(string message){lock(log){log.Add(message);File.WriteAllLines(report,log);}}void Pass(string message)=>Note("PASS "+message);
         RenderPreview(Path.ChangeExtension(report,"png"));Pass("Branded WPF window loads and renders without capturing the desktop");
         var store=new LocalStore(Path.Combine(testDirectory,"Settings"));using var api=new CloudApi(testOrigin:origin);SyncEngine? engine=null;
         try {
             var session=await api.Login("windows_test","synthetic windows passphrase");store.SaveSession(session);
             Assert(store.LoadSession()==session,"DPAPI session did not round-trip");Assert(!Encoding.UTF8.GetString(File.ReadAllBytes(Path.Combine(store.DirectoryPath,"account.dpapi"))).Contains(session.Token),"Token stored in plaintext");Pass("Minova sign-in and DPAPI credential encryption");
             var seed=Path.Combine(testDirectory,"seed.txt");await File.WriteAllTextAsync(seed,"A file from the website.\n");var first=await api.Upload("Report.txt",seed,null,default);await api.Folder("Pictures",default);
-            var root=Path.Combine(testDirectory,"Cloud");engine=new(root,api,store,true);engine.Activity+=message=>{log.Add("  "+message);File.WriteAllLines(report,log);};
+            var root=Path.Combine(testDirectory,"Cloud");engine=new(root,api,store,true);engine.Activity+=message=>Note("  "+message);
             await engine.Connect(true);await engine.SyncOnce();var local=Path.Combine(root,"Report.txt");
             Assert(CloudFilesProvider.IsPlaceholder(local),"Remote file was not a Cloud Files placeholder");Assert(CloudFilesProvider.OnlineOnly(local),"Remote file downloaded before being opened");Pass("Native sync-root registration and online-only placeholder creation");
             var content=await Task.Run(()=>File.ReadAllText(local)).WaitAsync(TimeSpan.FromSeconds(40));Assert(content=="A file from the website.\n","Hydrated file differs");Assert(!CloudFilesProvider.OnlineOnly(local),"Hydrated file still online-only");Pass("Opening a file in Windows hydrates its exact cloud contents");
@@ -32,10 +32,14 @@ internal static class IntegrationChecks {
             File.Delete(newPath);await engine.SyncOnce();Assert(!(await api.Snapshot(default)).Items.Any(x=>x.Path=="From Windows.txt"),"Local deletion not synced");Pass("Explorer deletion moves the matching remote file to Cloud trash");
             var latest=(await api.Snapshot(default)).Items.Single(x=>x.Path=="Report.txt");await api.Trash(latest,false,default);await engine.SyncOnce();Assert(!File.Exists(local),"Remote deletion not reflected");Assert(Directory.EnumerateFiles(Path.Combine(store.AccountPath(session.User.Id),"Recovered files"),"Report.txt",SearchOption.AllDirectories).Any(),"Downloaded remote-deleted file was not recoverable");Pass("Remote deletions update Explorer and preserve downloaded recovery copies");
             engine.Dispose();engine=new(root,api,store,true);await engine.Connect(false);await engine.SyncOnce();Pass("Sync resumes from the same account ledger after a client restart");
+            var outside=Path.Combine(testDirectory,"Outside sync");Directory.CreateDirectory(outside);File.WriteAllText(Path.Combine(outside,"private.txt"),"Do not upload outside this sync root.");
+            var junction=Path.Combine(root,"Linked folder");var command="New-Item -ItemType Junction -Path '"+junction.Replace("'","''")+"' -Target '"+outside.Replace("'","''")+"' | Out-Null";
+            using(var process=Process.Start(new ProcessStartInfo("powershell.exe"){ArgumentList={"-NoProfile","-NonInteractive","-EncodedCommand",Convert.ToBase64String(Encoding.Unicode.GetBytes(command))},UseShellExecute=false,CreateNoWindow=true})!){await process.WaitForExitAsync();Assert(process.ExitCode==0,"Could not create junction fixture");}
+            bool linkBlocked=false;try{await engine.SyncOnce();}catch(IOException){linkBlocked=true;}Assert(linkBlocked,"A linked folder escaped sync-root isolation");Assert(!(await api.Snapshot(default)).Items.Any(x=>x.Path.Contains("private.txt")),"A file outside the sync root was uploaded");Directory.Delete(junction);Pass("Linked folders are rejected before any synchronization changes");
             File.Delete(Path.Combine(root,SyncEngine.Marker));bool blocked=false;try{await engine.SyncOnce();}catch(IOException){blocked=true;}Assert(blocked,"Missing root identity did not block deletions");Pass("Missing or replaced sync folders cannot trigger cloud deletions");
             bool escaped=false;try{SyncEngine.SafePath(root,"../outside.txt");}catch(IOException){escaped=true;}Assert(escaped,"Traversal path accepted");Pass("Cloud paths cannot escape the sync root");
-            File.WriteAllLines(report,log.Append("ALL WINDOWS INTEGRATION CHECKS PASSED"));
-        } catch(Exception error){File.WriteAllLines(report,log.Append(error.ToString()));throw;}
+            Note("ALL WINDOWS INTEGRATION CHECKS PASSED");
+        } catch(Exception error){Note(error.ToString());throw;}
         finally{if(engine!=null){engine.Dispose();try{engine.UnregisterForTest();}catch(Exception){}}}
     }
     static void RenderPreview(string file) {

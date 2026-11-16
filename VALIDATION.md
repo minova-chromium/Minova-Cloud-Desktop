@@ -20,10 +20,12 @@ Seventeen checks passed:
 14. Cloud deletion removes the Explorer entry and keeps a downloaded recovery copy.
 15. Client restart reconnects using the existing account ledger.
 16. Missing sync-root identity blocks synchronization and cloud deletions.
-17. Traversal paths cannot escape the sync folder.
+17. Linked folders are rejected before any sync changes or uploads outside the sync root.
+18. Traversal paths cannot escape the sync folder.
 
 All eight Node server suites passed, including revision race detection, account isolation, conditional moves, stale downloads, safe directory deletion, and previous-version restoration. The Android download/release suite still passes.
 
 The Release build completed without compiler warnings. The self-contained installer was installed, its DLL hash matched the packaged DLL, the uninstaller removed the application and its registration, and reinstall succeeded. Native integration checks unregister only their temporary test provider. Screen capture was not used; the UI preview was rendered directly by WPF.
 
 GitHub Actions builds the Windows application and installer, verifies release metadata, retains artifacts, and prepares a draft. This is an unsigned preview; Windows compatibility beyond this PC is not yet independently verified. Remote server availability, open-file locks, and Windows hydration behavior can affect timing. Some rename operations may cache contents before sync completes. Shared-with-me items are accessed through the website in this preview.
+

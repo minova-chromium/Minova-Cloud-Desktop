@@ -43,7 +43,7 @@ internal static class CloudFilesNative {
         using var file=CreateFileW(path,0x80,7,IntPtr.Zero,3,0x02200000,IntPtr.Zero);
         if(file.IsInvalid)throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
         if(!GetFileInformationByHandleEx(file,9,out var tag,8))throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
-        return CfGetPlaceholderStateFromAttributeTag(tag.Attributes,tag.Tag);
+        var state=CfGetPlaceholderStateFromAttributeTag(tag.Attributes,tag.Tag);return state==uint.MaxValue?0:state;
     }
     public sealed class Handle : IDisposable {
         public IntPtr Value {get;}
